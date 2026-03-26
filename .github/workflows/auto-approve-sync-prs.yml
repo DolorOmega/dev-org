@@ -1,0 +1,28 @@
+name: Auto-Approve Sync PRs
+
+permissions
+    pull-requests: write
+    contents: read
+
+on:
+  pull_request:
+    types: [opened, reopened, synchronize]
+
+jobs:  
+    auto-approve:
+        name: Auto-Approve Sync PRs
+        runs-on: ubuntu-latest
+
+        steps:
+            - name: Check PR Details
+              id: check
+              run: |
+                "PR Title: ${{ github.event.pull_request.title }}"
+                echo "PR Author: ${{ github.event.pull_request.user.login }}"
+                if [[ "${{ github.event.pull_request.title }}" == *"Sync"* ]]; then
+                  echo "This is a Sync PR."
+                  echo "::set-output name=is_sync::true"
+                else
+                  echo "This is not a Sync PR."
+                  echo "::set-output name=is_sync::false"
+                fi
