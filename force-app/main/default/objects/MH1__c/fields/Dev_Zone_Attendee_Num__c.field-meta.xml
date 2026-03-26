@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Dev_Zone_Attendee_Num__c</fullName>
+    <description>Number of Attendee assigned on registration.</description>
+    <externalId>false</externalId>
+    <label>Dev Zone Attendee #</label>
+    <trackTrending>false</trackTrending>
+    <type>AutoNumber</type>
+</CustomField>

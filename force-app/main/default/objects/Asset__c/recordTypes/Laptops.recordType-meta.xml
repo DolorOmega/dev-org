@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<RecordType xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Laptops</fullName>
+    <active>true</active>
+    <label>Laptops</label>
+    <picklistValues>
+        <picklist>AssetType__c</picklist>
+        <values>
+            <fullName>Laptops</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>Projectors</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>iPads</fullName>
+            <default>false</default>
+        </values>
+    </picklistValues>
+</RecordType>
