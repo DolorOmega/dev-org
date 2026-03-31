@@ -17,12 +17,46 @@ jobs:
             - name: Check PR Details
               id: check
               run: |
-                "PR Title: ${{ github.event.pull_request.title }}"
-                echo "PR Author: ${{ github.event.pull_request.user.login }}"
-                if [[ "${{ github.event.pull_request.title }}" == *"Sync"* ]]; then
-                  echo "This is a Sync PR."
-                  echo "::set-output name=is_sync::true"
+                "PR_TITLE: ${{ github.event.pull_request.title }}"
+                "PR_AUTHOR: ${{ github.event.pull_request.user.login }}"
+                SOURCE_BRANCH = "${{ github.event.pull_request.head.ref }}"
+
+                echo "PR_TITLE: $PR_TITLE"
+                echo "PR_AUTHOR: $PR_AUTHOR"
+                echo "Source Branch: $SOURCE_BRANCH"
+
+                # Check if title matches sync pattern, case insensitive
+                if echo "$PR_TITLE" | grep -iE "^sync .+ with main$"; then
+                  echo "title_match=true" >> $GITHUB_OUTPUT
                 else
-                  echo "This is not a Sync PR."
-                  echo "::set-output name=is_sync::false"
+                  echo "title_match=false" >> $GITHUB_OUTPUT
                 fi
+
+                # Check if source branch starts with "gs-pipeline" format
+                if [[ "$SOURCE_BRANCH" =~ ^gs-pipeline/main_* ]]; then
+                  echo "branch_match=true" >> $GITHUB_OUTPUT
+                else
+                  echo "branch_match=false" >> $GITHUB_OUTPUT
+                fi
+
+            - name: Auto-Approve PR
+              if: steps.check.outputs.title_match == 'true' && steps.check.outputs.branch_match == 'true'
+              env:
+                GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+                PR_NUMBER: ${{ github.event.pull_request.number }}
+                REPO: ${{ github.repository }}
+              run: |
+                echo ":white_check_mark: PR #$PR_NUMBER matches sync criteria. Auto-approving..."
+                echo "Approving PR #$PR_NUMBER..."
+                
+                gh pr review "$PR_NUMBER" --approve --body "Auto-approved by workflow for sync PRs." --repo "$REPO"
+
+                echo ":white_check_mark: PR #$PR_NUMBER approved successfully."
+
+            - name: Skip Non-Sync PR
+              if: steps.check.outputs.title_match == 'false' || steps.check.outputs.branch_match == 'false'
+              run: |
+                echo ":information_source: PR does not match sync criteria. Skipping auto-approval."
+                echo "Title Match: ${{ steps.check.outputs.title_match }}"
+                echo "Branch Match: ${{ steps.check.outputs.branch_match }}"
+                echo "Skipping approval for PR #${{ github.event.pull_request.number }}."
